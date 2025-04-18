@@ -7,9 +7,9 @@ This guide explains how to set up and run a microservices architecture with Nest
 Our system consists of two NestJS microservices:
 
 - **Auth Service** (port 3002): Acts as a RabbitMQ client and exposes a GraphQL API
-- **User Service** (port 3001): Acts as a RabbitMQ server and handles user data operations
+- **users Service** (port 3001): Acts as a RabbitMQ server and handles users data operations
 
-The services communicate via RabbitMQ message broker, with the Auth Service sending requests and the User Service responding with user data.
+The services communicate via RabbitMQ message broker, with the Auth Service sending requests and the users Service responding with users data.
 
 ## Prerequisites
 
@@ -22,11 +22,11 @@ The services communicate via RabbitMQ message broker, with the Auth Service send
 
 ## Starting the Services: Open two terminals on the main repository and run these commands on each terminal 
 
-### User Service (RabbitMQ Server) & Auth Service (RabbitMQ Client)
+### users Service (RabbitMQ Server) & Auth Service (RabbitMQ Client)
 
-1. Navigate to the user service directory in one terminal and auth service directory in the other 
+1. Navigate to the users service directory in one terminal and auth service directory in the other 
    ```bash
-   cd user-service
+   cd users-service
    ```
       ```bash
    cd auth-service
@@ -42,7 +42,7 @@ The services communicate via RabbitMQ message broker, with the Auth Service send
    npm run start
    ```
 
-4. The User Service will start on port 3001 and establish itself as a RabbitMQ server
+4. The users Service will start on port 3001 and establish itself as a RabbitMQ server
     The Auth Service will start on port 3002 and connect to RabbitMQ as a client
 
 ## How RabbitMQ Works in Our Setup
@@ -51,14 +51,14 @@ The services communicate via RabbitMQ message broker, with the Auth Service send
    
 2. **Producer/Consumer Model**:
    - Auth Service (producer) sends messages to RabbitMQ
-   - User Service (consumer) listens for messages and processes them
-   - User Service sends responses back through RabbitMQ
+   - users Service (consumer) listens for messages and processes them
+   - users Service sends responses back through RabbitMQ
    - Auth Service receives and processes these responses
 
 3. **Flow of a Request**:
    - Client sends a GraphQL query to Auth Service
    - Auth Service sends a message to RabbitMQ
-   - User Service receives the message, processes it, and sends the result back
+   - users Service receives the message, processes it, and sends the result back
    - Auth Service returns the response to the client
 
 ## Testing the API
@@ -97,10 +97,10 @@ To test the microservices communication:
 When you send the GraphQL query to the Auth Service:
 
 1. Auth Service receives the GraphQL query
-2. It creates a message with the user ID and publishes it to a RabbitMQ exchange
-3. The message is routed to a queue that the User Service is subscribed to
-4. User Service consumes the message, retrieves the user data for ID "123"
-5. User Service publishes a response message to a reply queue
+2. It creates a message with the users ID and publishes it to a RabbitMQ exchange
+3. The message is routed to a queue that the users Service is subscribed to
+4. users Service consumes the message, retrieves the users data for ID "123"
+5. users Service publishes a response message to a reply queue
 6. Auth Service receives the response from the reply queue
 7. Auth Service formats and returns the GraphQL response to the client
 
@@ -169,15 +169,15 @@ If commands aren't recognized, add to PATH manually:
    ```
 3. Access the management interface at [http://localhost:15672/](http://localhost:15672/)
 4. Default credentials:
-   - Username: `guest`
+   - usersname: `guest`
    - Password: `guest`
    - Note: These credentials only work when connecting from localhost
 
-## Create Admin User (Optional)
+## Create Admin users (Optional)
 
 ```bash
-rabbitmqctl add_user admin strong_password
-rabbitmqctl set_user_tags admin administrator
+rabbitmqctl add_users admin strong_password
+rabbitmqctl set_users_tags admin administrator
 rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 ```
 
@@ -190,8 +190,8 @@ rabbitmqctl status
 # List queues
 rabbitmqctl list_queues
 
-# List users
-rabbitmqctl list_users
+# List userss
+rabbitmqctl list_userss
 
 # List exchanges
 rabbitmqctl list_exchanges
