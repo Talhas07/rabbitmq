@@ -1,3 +1,122 @@
+# NestJS Microservices with RabbitMQ & GraphQL
+
+This guide explains how to set up and run a microservices architecture with NestJS applications using GraphQL and RabbitMQ for inter-service communication.
+
+## Architecture Overview
+
+Our system consists of two NestJS microservices:
+
+- **Auth Service** (port 3002): Acts as a RabbitMQ client and exposes a GraphQL API
+- **User Service** (port 3001): Acts as a RabbitMQ server and handles user data operations
+
+The services communicate via RabbitMQ message broker, with the Auth Service sending requests and the User Service responding with user data.
+
+## Prerequisites
+
+- Node.js 
+- RabbitMQ server running ([Installation guide](#rabbitmq-windows-setup-guide))
+- NPM or Yarn
+
+## RabbitMQ Setup
+  Exlained Below this tutorial
+
+## Starting the Services: Open two terminals on the main repository and run these commands on each terminal 
+
+### User Service (RabbitMQ Server) & Auth Service (RabbitMQ Client)
+
+1. Navigate to the user service directory in one terminal and auth service directory in the other 
+   ```bash
+   cd user-service
+   ```
+      ```bash
+   cd auth-service
+   ```
+
+2. Install dependencies on each terminal:
+   ```bash
+   npm install
+   ```
+
+3. Start the service on each terminal:
+   ```bash
+   npm run start
+   ```
+
+4. The User Service will start on port 3001 and establish itself as a RabbitMQ server
+    The Auth Service will start on port 3002 and connect to RabbitMQ as a client
+
+## How RabbitMQ Works in Our Setup
+
+1. **Message Queue**: RabbitMQ acts as a message broker that facilitates communication between our services
+   
+2. **Producer/Consumer Model**:
+   - Auth Service (producer) sends messages to RabbitMQ
+   - User Service (consumer) listens for messages and processes them
+   - User Service sends responses back through RabbitMQ
+   - Auth Service receives and processes these responses
+
+3. **Flow of a Request**:
+   - Client sends a GraphQL query to Auth Service
+   - Auth Service sends a message to RabbitMQ
+   - User Service receives the message, processes it, and sends the result back
+   - Auth Service returns the response to the client
+
+## Testing the API
+
+To test the microservices communication:
+
+1. Ensure both services and RabbitMQ are running
+2. Use a GraphQL client (like Apollo Studio, Insomnia, Postman) or cURL to send this query to the Auth Service:
+
+   Endpoint: `http://localhost:3002/graphql`
+
+   Query:
+   ```graphql
+   query Validate {
+       validate(id: "123") {
+           id
+           name
+       }
+   }
+   ```
+
+3. You should receive the following response:
+   ```json
+   {
+       "data": {
+           "validate": {
+               "id": "123",
+               "name": "John Doe"
+           }
+       }
+   }
+   ```
+
+## How It Works Behind the Scenes
+
+When you send the GraphQL query to the Auth Service:
+
+1. Auth Service receives the GraphQL query
+2. It creates a message with the user ID and publishes it to a RabbitMQ exchange
+3. The message is routed to a queue that the User Service is subscribed to
+4. User Service consumes the message, retrieves the user data for ID "123"
+5. User Service publishes a response message to a reply queue
+6. Auth Service receives the response from the reply queue
+7. Auth Service formats and returns the GraphQL response to the client
+
+## Troubleshooting
+
+- **Services won't start**: Ensure RabbitMQ is running with `rabbitmqctl status`
+- **Connection refused errors**: Check if the RabbitMQ connection settings match in both services
+- **No response from API**: Verify both services are running and check logs for errors
+- **GraphQL errors**: Make sure the GraphQL schema is properly defined in both services
+
+
+
+For more information about NestJS microservices with RabbitMQ, visit the [NestJS documentation](https://docs.nestjs.com/microservices/rabbitmq).
+
+
+
 # RabbitMQ Windows Setup Guide
 
 A minimal guide for installing RabbitMQ on Windows, setting up PATH, and configuring the management plugin.
@@ -62,7 +181,7 @@ rabbitmqctl set_user_tags admin administrator
 rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 ```
 
-## Common Commands
+## Common RabbitMQ Commands
 
 ```bash
 # Check service status
@@ -73,6 +192,12 @@ rabbitmqctl list_queues
 
 # List users
 rabbitmqctl list_users
+
+# List exchanges
+rabbitmqctl list_exchanges
+
+# List connections
+rabbitmqctl list_connections
 ```
 
 ---
